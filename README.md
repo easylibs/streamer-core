@@ -29,14 +29,14 @@ Output:
 ## Streamer ORM - Object Relational Mapper
 The `ORM Streamer` maps user objects to persistance entities and provides easy to use Java `Streams` that can be be configured to efficiently query the persistance layer. For SQL, queries are built based on `Stream` filters, mapping, etc to generate most efficient query or statement so least amount of data is actually sent. The results are presented in a standard `Stream` object where the data can be further filtered, remapped and collected.
 
-Here is a basic example that query a database table *Person* using a POJO class `Person`. The result is further filtered to include only those database entries who's name starts with the letter 'a':
+Here is a basic example that query a database table *Person* using a POJO class `Person` with just 2 fields `int id` and `String name`. The result is further filtered to include only those database entries who's name starts with the letter 'A':
 SQL:
 ```
-SELECT * FROM Person WHERE name like "A%";
+SELECT * FROM Person WHERE name LIKE "A%";
 ```
 Java:
 ```java
-OrmStreamer streamer = OrmStreamer.of(ds.getConnection());
+final OrmStreamer streamer = OrmStreamer.of(ds.getConnection());
 
 Table<Person> table = streamer.meta().table(Person.class);
 StringAttribute<Person> name = table.meta().stringAttribute("name");
