@@ -19,6 +19,7 @@ Java:
 final SqlStreamer streamer = SqlStreamer.of(ds.getConnection());
 streamer.query()
   .select(int.class, "1 + 1")
+  .stream()
   .forEach(System.out::println);
 ```
 Output:
