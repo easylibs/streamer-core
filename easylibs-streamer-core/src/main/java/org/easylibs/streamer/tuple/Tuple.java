@@ -32,23 +32,27 @@ public interface Tuple {
 
 	Object get(int index);
 
-	Optional<Object> getOptional(int index);
-
 	<T> T get(int index, Class<T> type);
+
+	public Optional<String> getLabel(int index);
+
+	Optional<Object> getOptional(int index);
 
 	<T> Optional<T> getOptional(int index, Class<T> type);
 
+	default <T> TupleGetter<T> getter(int index, Class<T> type) {
+		return Tuples.getter(this, index, type);
+	}
+
 	<T> void set(int index, T v);
 
-	Stream<?> stream();
-
-	<T> Stream<T> streamOf(Class<T> type);
+	public Tuple setLabel(int index, String label);
 
 	default <T> TupleSetter<T> setter(int index, Class<T> type) {
 		return Tuples.setter(this, index, type);
 	}
 
-	default <T> TupleGetter<T> getter(int index, Class<T> type) {
-		return Tuples.getter(this, index, type);
-	}
+	Stream<?> stream();
+
+	<T> Stream<T> streamOf(Class<T> type);
 }

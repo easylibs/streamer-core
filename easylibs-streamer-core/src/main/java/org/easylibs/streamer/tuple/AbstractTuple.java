@@ -25,24 +25,23 @@ package org.easylibs.streamer.tuple;
 
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.Spliterator;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public abstract class AbstractTuple implements Serializable, Tuple {
 
 	private static final long serialVersionUID = -3947048635987966734L;
 	private final int degree;
+	private String[] labels; // lazy allocated when needed
 
 	protected AbstractTuple(int degree) {
 		this.degree = degree;
 	}
 
-	@Override
-	public int degree() {
-		return degree;
+	protected AbstractTuple(int degree, String[] labels) {
+		this.degree = degree;
+		this.labels = labels;
 	}
 
 	protected int checkBounds(int index) {
@@ -53,6 +52,20 @@ public abstract class AbstractTuple implements Serializable, Tuple {
 		return index;
 	}
 
+	@Override
+	public int degree() {
+		return degree;
+	}
+
+	@Override
+	public abstract Object get(int index);
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T get(int index, Class<T> type) {
+		return (T) get(index);
+	}
+
 	protected Object getIndexed(int index, Object u) {
 		if (index < 0 || index >= degree()) {
 			throw new IndexOutOfBoundsException("Tuple index out of bounds " + index + " with degree " + degree());
@@ -61,18 +74,20 @@ public abstract class AbstractTuple implements Serializable, Tuple {
 		return u;
 	}
 
-	@Override
-	public abstract Object get(int index);
+	/**
+	 * @see org.easylibs.streamer.tuple.Tuple#getLabel(int)
+	 */
+	public Optional<String> getLabel(int index) {
+		checkBounds(index);
+
+		return (labels == null)
+				? Optional.empty()
+				: Optional.ofNullable(labels[index]);
+	}
 
 	@Override
 	public Optional<Object> getOptional(int index) {
 		return Optional.ofNullable(get(index));
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T get(int index, Class<T> type) {
-		return (T) get(index);
 	}
 
 	@Override
@@ -84,37 +99,23 @@ public abstract class AbstractTuple implements Serializable, Tuple {
 	public abstract <T> void set(int index, T v);
 
 	@Override
+	public Tuple setLabel(int index, String label) {
+		checkBounds(index);
+
+		/* Lazy allocate labels storage */
+		if (labels == null) {
+			labels = new String[degree()];
+		}
+
+		labels[index] = label;
+
+		return this;
+	}
+
+	@Override
 	public Stream<?> stream() {
-		return StreamSupport.stream(new Spliterator<Object>() {
-
-			@Override
-			public int characteristics() {
-				return 0;
-			}
-
-			@Override
-			public long estimateSize() {
-				return degree();
-			}
-
-			int i = 0;
-
-			@Override
-			public boolean tryAdvance(Consumer<? super Object> action) {
-				
-				if (i < degree()) {
-					action.accept(get(i++));
-				}
-
-				return i < degree();
-			}
-
-			@Override
-			public Spliterator<Object> trySplit() {
-				return null;
-			}
-
-		}, false);
+		return IntStream.range(0, degree())
+				.mapToObj(this::get);
 	}
 
 	@Override
@@ -124,12 +125,23 @@ public abstract class AbstractTuple implements Serializable, Tuple {
 				.map(type::cast);
 	}
 
+	private String formatValueLabelCombo(int index) {
+		final String label = (labels == null) ? null : labels[index];
+		final Object value = get(index);
+		final String quotes = (value instanceof String) ? "\"" : "";
+
+		return (label == null)
+				? quotes + String.valueOf(value) + quotes
+				: label + "=" + quotes + String.valueOf(value) + quotes;
+	}
+
 	@Override
 	public String toString() {
 		final String name = getClass().getSimpleName();
-		return name + " " + stream()
-				.map(String::valueOf)
-				.collect(Collectors.joining(", ", "[", "]"));
+
+		return IntStream.range(0, degree())
+				.mapToObj(this::formatValueLabelCombo)
+				.collect(Collectors.joining(", ", name + " [", "]"));
 	}
 
 }

@@ -23,41 +23,52 @@
  */
 package org.easylibs.streamer.tuple;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+public class TupleX extends AbstractTuple {
 
-import org.junit.jupiter.api.Test;
+	private static final long serialVersionUID = 7897029579218076365L;
 
-class TupleTest {
+	private Object[] values; // null indicates length of 0 or being serialized
 
-	@Test
-	void tuple_assertThrows() {
-		TupleVarargs tuple = new TupleVarargs();
-
-		System.out.println(tuple);
-
-		assertThrows(IndexOutOfBoundsException.class, () -> tuple.get(0));
-		assertThrows(IndexOutOfBoundsException.class, () -> tuple.get(1));
+	/**
+	 * Special constructor needed for object serialization
+	 */
+	protected TupleX() {
+		super(-1);
 	}
 
-	@Test
-	void tuple2_assertEquals() {
-		Tuple2<?, ?> tuple = new Tuple2<>("Hello", 10);
+	public TupleX(Object... values) {
+		super(-1);
 
-		System.out.println(tuple);
-
-		assertEquals("Hello", tuple.get(0, String.class));
-		assertEquals(10, tuple.get(1, int.class));
+		this.values = values;
 	}
 
-	@Test
-	void tuple_assertEquals() {
-		TupleVarargs tuple = new TupleVarargs("Hello", 10);
+	public TupleX(Object[] values, String[] labels) {
+		super(-1, labels);
 
-		System.out.println(tuple);
+		this.values = values;
+	}
 
-		assertEquals("Hello", tuple.get(0, String.class));
-		assertEquals(10, tuple.get(1, int.class));
+	public TupleX(int degree) {
+		super(-1);
+
+		values = new Object[degree];
+	}
+
+	@Override
+	public int degree() {
+		return ((values == null) ? 0 : values.length);
+	}
+
+	@Override
+	public Object get(int index) {
+		checkBounds(index);
+		return values[index];
+	}
+
+	@Override
+	public <T> void set(int index, T v) {
+		checkBounds(index);
+		this.values[index] = v;
 	}
 
 }

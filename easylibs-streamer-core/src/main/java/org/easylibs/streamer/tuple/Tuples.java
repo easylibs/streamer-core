@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 public abstract class Tuples {
 
-	public static TupleVarargs copyFrom(final Object obj) {
+	public static TupleX copyFrom(final Object obj) {
 		final Class<?> cl = obj.getClass();
 		final int MODIFIERS = (Modifier.FINAL | Modifier.STATIC | Modifier.TRANSIENT);
 
@@ -52,17 +52,17 @@ public abstract class Tuples {
 				})
 				.toArray();
 
-		return new TupleVarargs(values);
+		return new TupleX(values);
 	}
 
-	public static TupleVarargs fromClass(final Class<?> cl) {
+	public static TupleX fromClass(final Class<?> cl) {
 		final int MODIFIERS = (Modifier.FINAL | Modifier.STATIC | Modifier.TRANSIENT);
 
 		final int degree = (int) Stream.of(cl.getDeclaredFields())
 				.filter(f -> (f.getModifiers() & MODIFIERS) == 0)
 				.count();
 
-		return new TupleVarargs(degree);
+		return new TupleX(degree);
 	}
 
 	public static <TUPLE extends Tuple, T> TupleGetter<T> getter(final TUPLE tuple, int index, Class<T> type) {
@@ -98,9 +98,9 @@ public abstract class Tuples {
 		};
 	}
 
-	public static <T0> TupleVarargs of(T0 v0, Object... args) {
+	public static <T0> TupleX of(T0 v0, Object... args) {
 		if (args.length == 0) {
-			return new TupleVarargs(v0);
+			return new TupleX(v0);
 		}
 
 		final Object[] array = new Object[args.length + 1];
@@ -110,7 +110,7 @@ public abstract class Tuples {
 			array[i] = args[i - 1];
 		}
 
-		return new TupleVarargs(array);
+		return new TupleX(array);
 	}
 
 	public static <T0> Tuple1<T0> of(T0 v0) {
